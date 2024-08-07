@@ -1,6 +1,8 @@
+import executor
+
 Operators = {}
 PartialOperators = [
-    "str", "num", "write", "push"
+    "str", "num", "write", "push", "merge", "with", "rawmerge"
 ]
 BuilderVersion = 1
 
@@ -43,6 +45,14 @@ def expect(token: Token, type: str, line: int) -> bool:
         return True
     else:
         out_error(f"Expected type '{type}', got '{token.type}'", line)
+        quit(1)
+
+
+def mem_exist(memory: str) -> bool:
+    if executor.GlMemory.mem.__contains__(memory):
+        return True
+    else:
+        out_error(f"Memory stack with name '{mem2}' was not declared", index)
         quit(1)
 
 

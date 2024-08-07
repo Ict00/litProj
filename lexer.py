@@ -37,6 +37,12 @@ def lex1(lines: list[str]) -> list[Token]:
                             next_token = ""
                     else:
                         next_token += " "
+                case ';':
+                    if not writing_string:
+                        if next_token != "" and next_token != " " and next_token != "\r":
+                            result.append(Token("Identifier", next_token))
+                            next_token = ""
+                        result.append(Token("Semicolon", ";"))
                 case _:
                     next_token += c
         if next_token != "" and next_token != " " and next_token != "\r":

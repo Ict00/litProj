@@ -1,4 +1,4 @@
-from utils import out_error, operator
+from utils import out_error, operator, Token
 from executor import *
 import executor
 
@@ -30,13 +30,125 @@ def pull(index: int, args: list[Token]):
 def add(index: int, args: list[Token]):
     expect(args[0], "Number", index)
     expect(args[1], "Number", index)
-    res = executor.GlMemory.temp.pop(int(args[0].content)) + executor.GlMemory.temp.pop(int(args[1].content))
+    val1 = executor.GlMemory.temp.pop(int(args[0].content))
+    val2 = executor.GlMemory.temp.pop(int(args[1].content)-1)
+    res = val1 + val2
     executor.GlMemory.temp.append(res)
     return index, 0
 
 
 @operator
+def sub(index: int, args: list[Token]):
+    expect(args[0], "Number", index)
+    expect(args[1], "Number", index)
+    val1 = executor.GlMemory.temp.pop(int(args[0].content))
+    val2 = executor.GlMemory.temp.pop(int(args[1].content)-1)
+    res = val1 - val2
+    executor.GlMemory.temp.append(res)
+    return index, 0
+
+
+@operator
+def mul(index: int, args: list[Token]):
+    expect(args[0], "Number", index)
+    expect(args[1], "Number", index)
+    val1 = executor.GlMemory.temp.pop(int(args[0].content))
+    val2 = executor.GlMemory.temp.pop(int(args[1].content)-1)
+    res = val1 * val2
+    executor.GlMemory.temp.append(res)
+    return index, 0
+
+
+@operator
+def div(index: int, args: list[Token]):
+    expect(args[0], "Number", index)
+    expect(args[1], "Number", index)
+    val1 = executor.GlMemory.temp.pop(int(args[0].content))
+    val2 = executor.GlMemory.temp.pop(int(args[1].content)-1)
+    if val2 == 0:
+        out_error("Can't divide by zero", index)
+        quit(0)
+    res = val1 / val2
+    executor.GlMemory.temp.append(res)
+    return index, 0
+
+
+@operator
+def mod(index: int, args: list[Token]):
+    expect(args[0], "Number", index)
+    expect(args[1], "Number", index)
+    val1 = executor.GlMemory.temp.pop(int(args[0].content))
+    val2 = executor.GlMemory.temp.pop(int(args[1].content)-1)
+    if val2 == 0:
+        out_error("Can't divide by zero", index)
+        quit(0)
+    res = val1 % val2
+    executor.GlMemory.temp.append(res)
+    return index, 0
+
+
+@operator
+def inp(index: int, args: list[Token]):
+    expect(args[0], "String", index)
+    val = input(args[0].content)
+    for c in val:
+        executor.GlMemory.temp.append(int(c.encode()[0]))
+    return index, 0
+
+
+@operator
 def mergewith(index: int, args: list[Token]):
+    expect(args[0], "Identifier", index)
+    expect(args[1], "Identifier", index)
+    mem1 = args[0].content.replace("THIS", executor.CurrentMemory)
+    mem2 = args[1].content.replace("THIS", executor.CurrentMemory)
+    if mem_exist(mem1) and mem_exist(mem2):
+        for i in range(0, executor.GlMemory.mem[mem1].__len__()):
+            try:
+                executor.GlMemory.mem[mem2][i] = executor.GlMemory.mem[mem1][i]
+            except:
+                executor.GlMemory.mem[mem2].append(executor.GlMemory.mem[mem1][i])
+    return index, 0
+
+
+@operator
+def rawmergewith(index: int, args: list[Token]):
+    expect(args[0], "Identifier", index)
+    expect(args[1], "Identifier", index)
+    mem1 = args[0].content
+    mem2 = args[1].content
+    if mem1 == "THIS":
+        mem1 = executor.CurrentMemory
+    if mem2 == "THIS":
+        mem2 = executor.CurrentMemory
+    if mem_exist(mem1) and mem_exist(mem2):
+        for i in range(0, executor.GlMemory.mem[mem1].__len__()):
+            try:
+                executor.GlMemory.mem[mem2][i] = executor.GlMemory.mem[mem1][i]
+            except:
+                executor.GlMemory.mem[mem2].append(executor.GlMemory.mem[mem1][i])
+        executor.GlMemory.mem[mem2] = []
+    return index, 0
+
+
+@operator
+def forward(index: int, args: list[Token]):
+    if args[1].content != "ALL":
+        expect(args[0], "Identifier", index)
+        if not executor.GlMemory.mem.__contains__(args[0]):
+            out_error(f"Memory stack with name '{args[0].content}' was not declared", index)
+            quit(1)
+        for b in range(1, args.__len__()):
+            i = args[b]
+            expect(i, "Number", index)
+            executor.GlMemory.mem[args[0].content].append(executor.GlMemory.temp.pop(int(i.content)))
+    else:
+        expect(args[0], "Identifier", index)
+        if not executor.GlMemory.mem.__contains__(args[0]):
+            out_error(f"Memory stack with name '{args[0].content}' was not declared", index)
+            quit(1)
+        for i in executor.GlMemory.temp:
+            executor.GlMemory.mem[args[0].content].append(i)
     return index, 0
 
 
@@ -56,7 +168,12 @@ def push(index: int, args: list[Token]):
 def writestr(index: int, args: list[Token]):
     if expect(args[0], "String", index):
         for character in args[0].content:
-            executor.GlMemory.temp.append(character.encode())
+            executor.GlMemory.temp.append(int(character.encode()[0]))
+    return index, 0
+
+
+@operator
+def mark(index: int, args: list[Token]):
     return index, 0
 
 
@@ -66,6 +183,12 @@ def writenum(index: int, args: list[Token]):
         expect(i, "Number", index)
         executor.GlMemory.temp.append(int(i.content))
     return index, 0
+
+
+@operator
+def goto(index: int, args: list[Token]):
+    expect(args[0], "Number", index)
+    return int(args[0].content), 0
 
 
 @operator

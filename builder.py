@@ -23,16 +23,16 @@ def simple_build(tokens: list[Token]) -> str:
             if operator != "":
                 operator += token.content
             else:
-                operator = token.content
+                operator = f"{cur_line} {token.content}"
         elif token.type == "Semicolon":
             if operator != "":
-                if Operators.__contains__(operator):
+                if Operators.__contains__(operator.split(" ")[1]):
                     app[operator] = line.copy()
                     line = []
                     operator = ""
                     cur_line += 1
                 else:
-                    utils.out_error(f"Operator '{operator}' not found", cur_line)
+                    utils.out_error(f"Operator '{operator.split(" ")[1]}' not found", cur_line)
                     quit(1)
             else:
                 utils.out_error("No any operator", cur_line)

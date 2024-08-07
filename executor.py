@@ -19,15 +19,21 @@ def pre_execute(to_execute: str) -> dict:
 
 def execute(to_execute: str) -> int:
     to_execute = pre_execute(to_execute)
-    for i in range(0, to_execute.keys().__len__()):
+    i = 0
+    while i < to_execute.keys().__len__():
         key = list(to_execute.keys())[i]
-        result = Operators[key](i, to_execute[key])
-        i = result[0]
-        print(GlMemory.temp)
+        result = Operators[key.split(" ")[1]](i, to_execute[key])
+        try:
+            i = result[0]
+        except:
+            out_error(f"Tried to goto out of Execution List: {result[0]}", i)
+            quit(1)
+
         for b in GlMemory.mem["outstr"]:
-            print(b.decode(), end='')
+            print(b.to_bytes().decode(), end='')
         for b in GlMemory.mem["outnum"]:
             print(b, end='')
         GlMemory.mem["outnum"] = []
         GlMemory.mem["outstr"] = []
+        i += 1
     return 0
