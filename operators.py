@@ -91,8 +91,11 @@ def mod(index: int, args: list[Token]):
 def inp(index: int, args: list[Token]):
     expect(args[0], "String", index)
     val = input(args[0].content)
-    for c in val:
-        executor.GlMemory.temp.append(int(c.encode()[0]))
+    try:
+        executor.GlMemory.temp.append(int(val))
+    except:
+        for c in val:
+            executor.GlMemory.temp.append(int(c.encode()[0]))
     return index, 0
 
 
@@ -115,12 +118,8 @@ def mergewith(index: int, args: list[Token]):
 def rawmergewith(index: int, args: list[Token]):
     expect(args[0], "Identifier", index)
     expect(args[1], "Identifier", index)
-    mem1 = args[0].content
-    mem2 = args[1].content
-    if mem1 == "THIS":
-        mem1 = executor.CurrentMemory
-    if mem2 == "THIS":
-        mem2 = executor.CurrentMemory
+    mem1 = args[0].content.replace("THIS", executor.CurrentMemory)
+    mem2 = args[1].content.replace("THIS", executor.CurrentMemory)
     if mem_exist(mem1, index) and mem_exist(mem2, index):
         for i in range(0, executor.GlMemory.mem[mem1].__len__()):
             try:
@@ -128,6 +127,23 @@ def rawmergewith(index: int, args: list[Token]):
             except:
                 executor.GlMemory.mem[mem2].append(executor.GlMemory.mem[mem1][i])
         executor.GlMemory.mem[mem2] = []
+    return index, 0
+
+
+@operator
+def mforward(index: int, args: list[Token]):
+    if args[1].content != "ALL":
+        expect(args[0], "Identifier", index)
+        if mem_exist(args[0].content, index):
+            for b in range(1, args.__len__()):
+                i = args[b]
+                expect(i, "Number", index)
+                executor.GlMemory.mem[args[0].content].append(executor.GlMemory.mem[executor.CurrentMemory].pop(int(i.content)))
+    else:
+        expect(args[0], "Identifier", index)
+        if mem_exist(args[0].content, index):
+            for i in executor.GlMemory.mem[executor.CurrentMemory]:
+                executor.GlMemory.mem[args[0].content].append(i)
     return index, 0
 
 
@@ -161,6 +177,59 @@ def push(index: int, args: list[Token]):
 
 
 @operator
+def cloneto(index: int, args: list[Token]):
+    expect(args[0], "Identifier", index)
+    expect(args[1], "Identifier", index)
+    mem1 = args[0].content.replace("THIS", executor.CurrentMemory)
+    mem2 = args[1].content.replace("THIS", executor.CurrentMemory)
+    if mem_exist(mem1, index) and mem_exist(mem2, index):
+        executor.GlMemory.mem[mem2] = executor.GlMemory.mem[mem1].copy()
+    return index, 0
+
+
+@operator
+def tdel(index: int, args: list[Token]):
+    if args[0].content != "ALL":
+        for i in args:
+            expect(i, "Number", index)
+            try:
+                executor.GlMemory.temp[i.content] = 0
+            except:
+                out_error("Tried to clear out of memory", index)
+                quit(1)
+    else:
+        executor.GlMemory.temp = []
+    return index, 0
+
+
+@operator
+def mdel(index: int, args: list[Token]):
+    if args[0].content != "ALL":
+        for i in args:
+            expect(i, "Number", index)
+            try:
+                executor.GlMemory.mem[executor.CurrentMemory][i.content] = 0
+            except:
+                out_error("Tried to clear out of memory", index)
+                quit(1)
+    else:
+        executor.GlMemory.mem[executor.CurrentMemory] = []
+    return index, 0
+
+
+@operator
+def ddel(index: int, args: list[Token]):
+    expect(args[0], "Identifier", index)
+    mem = args[0].content.replace("THIS", executor.CurrentMemory)
+    if mem_exist(mem, index) and mem != executor.CurrentMemory:
+        executor.GlMemory.mem.__delitem__(mem)
+    else:
+        out_error(f"Tried deleting memory stack '{mem}', which is being executed", index)
+        quit(1)
+    return index, 0
+
+
+@operator
 def writestr(index: int, args: list[Token]):
     if expect(args[0], "String", index):
         for character in args[0].content:
@@ -182,10 +251,61 @@ def writenum(index: int, args: list[Token]):
 
 
 @operator
+def equit(index: int, args: list[Token]):
+    quit(0)
+
+@operator
+def lif(index: int, args: list[Token]):
+    expect(args[0], "Number", index)
+    val = executor.GlMemory.temp.pop(int(args[0].content))
+    if val == 0:
+        index += 1
+    return index, 0
+
+
+@operator
 def l_not(index: int, args: list[Token]):
     expect(args[0], "Number", index)
     a = executor.GlMemory.temp.pop(int(args[0].content))
     executor.GlMemory.temp.append(0 if a == 1 else 1)
+    return index, 0
+
+
+@operator
+def str_eq(index: int, args: list[Token]):
+    expect(args[0], "Number", index)
+    expect(args[1], "String", index)
+    a, b = int(args[0].content), args[1].content
+    for i in range(0, b.__len__()):
+        try:
+            var = executor.GlMemory.mem[executor.CurrentMemory][a]
+            if var != int(b.encode()[i]):
+                executor.GlMemory.temp.append(0)
+                return index, 0
+            a += 1
+        except:
+            executor.GlMemory.temp.append(0)
+            return index, 0
+    executor.GlMemory.temp.append(1)
+    return index, 0
+
+
+@operator
+def str_noteq(index: int, args: list[Token]):
+    expect(args[0], "Number", index)
+    expect(args[1], "String", index)
+    a, b = int(args[0].content), args[1].content
+    for i in range(0, b.__len__()):
+        try:
+            var = executor.GlMemory.mem[executor.CurrentMemory][a]
+            if var == int(b.encode()[i]):
+                executor.GlMemory.temp.append(0)
+                return index, 0
+            a += 1
+        except:
+            executor.GlMemory.temp.append(0)
+            return index, 0
+    executor.GlMemory.temp.append(1)
     return index, 0
 
 

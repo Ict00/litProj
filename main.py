@@ -4,7 +4,7 @@ from builder import *
 from executor import *
 from operators import *
 
-e = lex2(lex1(prelex("write 1 5 num;0 == 1;forward outnum ALL")))
+e = lex2(lex1(prelex("declare test;write \"Test 1\" str;push ALL;clone THIS to test;use test;ddel THIS;mforward outstr ALL")))
 
 #for i in e:
 #    print(f"{i.content} {i.type}")

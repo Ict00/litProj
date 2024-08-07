@@ -28,7 +28,6 @@ def execute(to_execute: str) -> int:
         except:
             out_error(f"Tried to goto out of Execution List: {result[0]}", i)
             quit(1)
-
         for b in GlMemory.mem["outstr"]:
             print(b.to_bytes().decode(), end='')
         for b in GlMemory.mem["outnum"]:

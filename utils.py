@@ -2,7 +2,7 @@ import executor
 
 Operators = {}
 PartialOperators = [
-    "str", "num", "write", "push", "merge", "with", "rawmerge"
+    "str", "num", "write", "push", "merge", "with", "rawmerge", "clone", "to"
 ]
 BuilderVersion = 1
 
@@ -71,6 +71,8 @@ def operator(_func = None):
             case "l_lesser": Operators["<"] = func
             case "l_lesseq": Operators["<"] = func
             case "l_greatereq": Operators[">="] = func
+            case "str_eq": Operators["='="] = func
+            case "str_noteq": Operators["!'="] = func
             case _: Operators[func.__name__] = func
     decorator_operator(_func)
 
