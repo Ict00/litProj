@@ -102,7 +102,7 @@ def mergewith(index: int, args: list[Token]):
     expect(args[1], "Identifier", index)
     mem1 = args[0].content.replace("THIS", executor.CurrentMemory)
     mem2 = args[1].content.replace("THIS", executor.CurrentMemory)
-    if mem_exist(mem1) and mem_exist(mem2):
+    if mem_exist(mem1, index) and mem_exist(mem2, index):
         for i in range(0, executor.GlMemory.mem[mem1].__len__()):
             try:
                 executor.GlMemory.mem[mem2][i] = executor.GlMemory.mem[mem1][i]
@@ -121,7 +121,7 @@ def rawmergewith(index: int, args: list[Token]):
         mem1 = executor.CurrentMemory
     if mem2 == "THIS":
         mem2 = executor.CurrentMemory
-    if mem_exist(mem1) and mem_exist(mem2):
+    if mem_exist(mem1, index) and mem_exist(mem2, index):
         for i in range(0, executor.GlMemory.mem[mem1].__len__()):
             try:
                 executor.GlMemory.mem[mem2][i] = executor.GlMemory.mem[mem1][i]
@@ -135,20 +135,16 @@ def rawmergewith(index: int, args: list[Token]):
 def forward(index: int, args: list[Token]):
     if args[1].content != "ALL":
         expect(args[0], "Identifier", index)
-        if not executor.GlMemory.mem.__contains__(args[0]):
-            out_error(f"Memory stack with name '{args[0].content}' was not declared", index)
-            quit(1)
-        for b in range(1, args.__len__()):
-            i = args[b]
-            expect(i, "Number", index)
-            executor.GlMemory.mem[args[0].content].append(executor.GlMemory.temp.pop(int(i.content)))
+        if mem_exist(args[0].content, index):
+            for b in range(1, args.__len__()):
+                i = args[b]
+                expect(i, "Number", index)
+                executor.GlMemory.mem[args[0].content].append(executor.GlMemory.temp.pop(int(i.content)))
     else:
         expect(args[0], "Identifier", index)
-        if not executor.GlMemory.mem.__contains__(args[0]):
-            out_error(f"Memory stack with name '{args[0].content}' was not declared", index)
-            quit(1)
-        for i in executor.GlMemory.temp:
-            executor.GlMemory.mem[args[0].content].append(i)
+        if mem_exist(args[0].content, index):
+            for i in executor.GlMemory.temp:
+                executor.GlMemory.mem[args[0].content].append(i)
     return index, 0
 
 
@@ -183,6 +179,69 @@ def writenum(index: int, args: list[Token]):
         expect(i, "Number", index)
         executor.GlMemory.temp.append(int(i.content))
     return index, 0
+
+
+@operator
+def l_not(index: int, args: list[Token]):
+    expect(args[0], "Number", index)
+    a = executor.GlMemory.temp.pop(int(args[0].content))
+    executor.GlMemory.temp.append(0 if a == 1 else 1)
+    return index, 0
+
+
+@operator
+def l_eq(index: int, args: list[Token]):
+    expect(args[0], "Number", index)
+    expect(args[1], "Number", index)
+    a, b = executor.GlMemory.temp.pop(int(args[0].content)), executor.GlMemory.temp.pop(int(args[1].content)-1)
+    executor.GlMemory.temp.append(1 if a == b else 0)
+    return index, 0
+
+
+@operator
+def l_noteq(index: int, args: list[Token]):
+    expect(args[0], "Number", index)
+    expect(args[1], "Number", index)
+    a, b = executor.GlMemory.temp.pop(int(args[0].content)), executor.GlMemory.temp.pop(int(args[1].content)-1)
+    executor.GlMemory.temp.append(1 if a != b else 0)
+    return index, 0
+
+
+@operator
+def l_greater(index: int, args: list[Token]):
+    expect(args[0], "Number", index)
+    expect(args[1], "Number", index)
+    a, b = executor.GlMemory.temp.pop(int(args[0].content)), executor.GlMemory.temp.pop(int(args[1].content)-1)
+    executor.GlMemory.temp.append(1 if a > b else 0)
+    return index, 0
+
+
+@operator
+def l_lesser(index: int, args: list[Token]):
+    expect(args[0], "Number", index)
+    expect(args[1], "Number", index)
+    a, b = executor.GlMemory.temp.pop(int(args[0].content)), executor.GlMemory.temp.pop(int(args[1].content)-1)
+    executor.GlMemory.temp.append(1 if a < b else 0)
+    return index, 0
+
+
+@operator
+def l_lesseq(index: int, args: list[Token]):
+    expect(args[0], "Number", index)
+    expect(args[1], "Number", index)
+    a, b = executor.GlMemory.temp.pop(int(args[0].content)), executor.GlMemory.temp.pop(int(args[1].content)-1)
+    executor.GlMemory.temp.append(1 if a <= b else 0)
+    return index, 0
+
+
+@operator
+def l_greatereq(index: int, args: list[Token]):
+    expect(args[0], "Number", index)
+    expect(args[1], "Number", index)
+    a, b = executor.GlMemory.temp.pop(int(args[0].content)), executor.GlMemory.temp.pop(int(args[1].content)-1)
+    executor.GlMemory.temp.append(1 if a >= b else 0)
+    return index, 0
+
 
 
 @operator

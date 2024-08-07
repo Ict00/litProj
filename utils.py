@@ -48,11 +48,11 @@ def expect(token: Token, type: str, line: int) -> bool:
         quit(1)
 
 
-def mem_exist(memory: str) -> bool:
+def mem_exist(memory: str, index: int) -> bool:
     if executor.GlMemory.mem.__contains__(memory):
         return True
     else:
-        out_error(f"Memory stack with name '{mem2}' was not declared", index)
+        out_error(f"Memory stack with name '{memory}' was not declared", index)
         quit(1)
 
 
@@ -63,7 +63,15 @@ def token_from_json(content: dict) -> Token:
 def operator(_func = None):
     def decorator_operator(func):
         global Operators
-        Operators[func.__name__] = func
+        match func.__name__:
+            case "l_not": Operators["!"] = func
+            case "l_eq": Operators["=="] = func
+            case "l_noteq": Operators["!="] = func
+            case "l_greater": Operators[">"] = func
+            case "l_lesser": Operators["<"] = func
+            case "l_lesseq": Operators["<"] = func
+            case "l_greatereq": Operators[">="] = func
+            case _: Operators[func.__name__] = func
     decorator_operator(_func)
 
 
