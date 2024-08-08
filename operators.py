@@ -1,3 +1,6 @@
+import builtins
+import time
+
 from utils import out_error, operator, Token
 from executor import *
 import executor
@@ -11,6 +14,25 @@ def declare(index: int, args: list[Token]):
         else:
             out_error(f"Memory stack with name '{args[0].content}' was already declared", index)
             quit(1)
+    return index, 0
+
+
+@operator
+def sleep(index: int, args: list[Token]):
+    if expect(args[0], "Number", index):
+        time.sleep(int(args[0].content))
+    return index, 0
+
+
+@operator
+def tpop(index: int, args: list[Token]):
+    if args[0].content == "ALL":
+        for i in executor.GlMemory.mem[executor.CurrentMemory].__len__():
+            executor.GlMemory.temp.append(executor.GlMemory.mem[executor.CurrentMemory].pop(i))
+    else:
+        for i in args:
+            expect(i, "Number", index)
+            executor.GlMemory.temp.append(executor.GlMemory.mem[executor.CurrentMemory].pop(int(i.content)))
     return index, 0
 
 
@@ -31,7 +53,7 @@ def add(index: int, args: list[Token]):
     expect(args[0], "Number", index)
     expect(args[1], "Number", index)
     val1 = executor.GlMemory.temp.pop(int(args[0].content))
-    val2 = executor.GlMemory.temp.pop(int(args[1].content)-1)
+    val2 = executor.GlMemory.temp.pop(int(args[1].content) - 1)
     res = val1 + val2
     executor.GlMemory.temp.append(res)
     return index, 0
@@ -42,7 +64,7 @@ def sub(index: int, args: list[Token]):
     expect(args[0], "Number", index)
     expect(args[1], "Number", index)
     val1 = executor.GlMemory.temp.pop(int(args[0].content))
-    val2 = executor.GlMemory.temp.pop(int(args[1].content)-1)
+    val2 = executor.GlMemory.temp.pop(int(args[1].content) - 1)
     res = val1 - val2
     executor.GlMemory.temp.append(res)
     return index, 0
@@ -53,7 +75,7 @@ def mul(index: int, args: list[Token]):
     expect(args[0], "Number", index)
     expect(args[1], "Number", index)
     val1 = executor.GlMemory.temp.pop(int(args[0].content))
-    val2 = executor.GlMemory.temp.pop(int(args[1].content)-1)
+    val2 = executor.GlMemory.temp.pop(int(args[1].content) - 1)
     res = val1 * val2
     executor.GlMemory.temp.append(res)
     return index, 0
@@ -64,7 +86,7 @@ def div(index: int, args: list[Token]):
     expect(args[0], "Number", index)
     expect(args[1], "Number", index)
     val1 = executor.GlMemory.temp.pop(int(args[0].content))
-    val2 = executor.GlMemory.temp.pop(int(args[1].content)-1)
+    val2 = executor.GlMemory.temp.pop(int(args[1].content) - 1)
     if val2 == 0:
         out_error("Can't divide by zero", index)
         quit(0)
@@ -78,7 +100,7 @@ def mod(index: int, args: list[Token]):
     expect(args[0], "Number", index)
     expect(args[1], "Number", index)
     val1 = executor.GlMemory.temp.pop(int(args[0].content))
-    val2 = executor.GlMemory.temp.pop(int(args[1].content)-1)
+    val2 = executor.GlMemory.temp.pop(int(args[1].content) - 1)
     if val2 == 0:
         out_error("Can't divide by zero", index)
         quit(0)
@@ -89,8 +111,11 @@ def mod(index: int, args: list[Token]):
 
 @operator
 def inp(index: int, args: list[Token]):
-    expect(args[0], "String", index)
-    val = input(args[0].content)
+    if args.__len__() != 0:
+        expect(args[0], "String", index)
+        val = input(args[0].content)
+    else:
+        val = input()
     try:
         executor.GlMemory.temp.append(int(val))
     except:
@@ -126,7 +151,7 @@ def rawmergewith(index: int, args: list[Token]):
                 executor.GlMemory.mem[mem2][i] = executor.GlMemory.mem[mem1][i]
             except:
                 executor.GlMemory.mem[mem2].append(executor.GlMemory.mem[mem1][i])
-        executor.GlMemory.mem[mem2] = []
+        executor.GlMemory.mem[mem1] = []
     return index, 0
 
 
@@ -138,7 +163,8 @@ def mforward(index: int, args: list[Token]):
             for b in range(1, args.__len__()):
                 i = args[b]
                 expect(i, "Number", index)
-                executor.GlMemory.mem[args[0].content].append(executor.GlMemory.mem[executor.CurrentMemory].pop(int(i.content)))
+                executor.GlMemory.mem[args[0].content].append(
+                    executor.GlMemory.mem[executor.CurrentMemory].pop(int(i.content)))
     else:
         expect(args[0], "Identifier", index)
         if mem_exist(args[0].content, index):
@@ -155,7 +181,7 @@ def forward(index: int, args: list[Token]):
             for b in range(1, args.__len__()):
                 i = args[b]
                 expect(i, "Number", index)
-                executor.GlMemory.mem[args[0].content].append(executor.GlMemory.temp.pop(int(i.content)))
+                executor.GlMemory.mem[args[0].content].append(executor.GlMemory.temp[(int(i.content))])
     else:
         expect(args[0], "Identifier", index)
         if mem_exist(args[0].content, index):
@@ -166,7 +192,13 @@ def forward(index: int, args: list[Token]):
 
 @operator
 def push(index: int, args: list[Token]):
-    if args[0].content != "ALL":
+    if args[0].content == "SOFT":
+        for b in range(1, args.__len__()):
+            i = args[b]
+            expect(i, "Number", index)
+            executor.GlMemory.mem[executor.CurrentMemory].append(executor.GlMemory.temp[int(i.content)])
+        pass
+    elif args[0].content != "ALL":
         for i in args:
             expect(i, "Number", index)
             executor.GlMemory.mem[executor.CurrentMemory].append(executor.GlMemory.temp.pop(int(i.content)))
@@ -243,6 +275,20 @@ def mark(index: int, args: list[Token]):
 
 
 @operator
+def pair(index: int, args: list[Token]):
+    for i in args:
+        expect(i, "Number", index)
+    if args.__len__() % 2 != 0:
+        out_error("Odd number of arguments", index)
+        quit(1)
+    else:
+        for i in range(0, int(args.__len__()/2)):
+
+            executor.GlMemory.temp.insert(i, int(args[int(args.__len__()/2)+i].content))
+    return index, 0
+
+
+@operator
 def writenum(index: int, args: list[Token]):
     for i in args:
         expect(i, "Number", index)
@@ -251,8 +297,63 @@ def writenum(index: int, args: list[Token]):
 
 
 @operator
+def pycall(index: int, args: list[Token]):
+    expect(args[0], "String", index)
+    cmd = args[0].content
+    try:
+        result = eval(cmd)
+        if result is not None:
+            if isinstance(result, list):
+                for i in result:
+                    try:
+                        executor.GlMemory.temp.append(int(i))
+                    except:
+                        try:
+                            executor.GlMemory.temp.append(int(i.encode()[0]))
+                        except:
+                            try:
+                                if i:
+                                    executor.GlMemory.temp.append(1)
+                                else:
+                                    executor.GlMemory.temp.append(0)
+                            except:
+                                executor.GlMemory.temp.append(0)
+            elif isinstance(result, dict):
+                for i in list(result.values()):
+                    try:
+                        executor.GlMemory.temp.append(int(i))
+                    except:
+                        try:
+                            executor.GlMemory.temp.append(int(i.encode()[0]))
+                        except:
+                            try:
+                                if i:
+                                    executor.GlMemory.temp.append(1)
+                                else:
+                                    executor.GlMemory.temp.append(0)
+                            except:
+                                executor.GlMemory.temp.append(0)
+            elif isinstance(result, int):
+                executor.GlMemory.temp.append(result)
+            elif isinstance(result, str):
+                for i in result:
+                    executor.GlMemory.temp.append(int(i.encode()[0]))
+            elif isinstance(result, range):
+                for i in result:
+                    executor.GlMemory.temp.append(i)
+            else:
+                out_error("pycall: return value is not supported", index)
+                quit(1)
+    except:
+        out_error("pycall: something went wrong", index)
+        quit(1)
+    return index, 0
+
+
+@operator
 def equit(index: int, args: list[Token]):
     quit(0)
+
 
 @operator
 def lif(index: int, args: list[Token]):
@@ -313,7 +414,7 @@ def str_noteq(index: int, args: list[Token]):
 def l_eq(index: int, args: list[Token]):
     expect(args[0], "Number", index)
     expect(args[1], "Number", index)
-    a, b = executor.GlMemory.temp.pop(int(args[0].content)), executor.GlMemory.temp.pop(int(args[1].content)-1)
+    a, b = executor.GlMemory.temp.pop(int(args[0].content)), executor.GlMemory.temp.pop(int(args[1].content) - 1)
     executor.GlMemory.temp.append(1 if a == b else 0)
     return index, 0
 
@@ -322,7 +423,7 @@ def l_eq(index: int, args: list[Token]):
 def l_noteq(index: int, args: list[Token]):
     expect(args[0], "Number", index)
     expect(args[1], "Number", index)
-    a, b = executor.GlMemory.temp.pop(int(args[0].content)), executor.GlMemory.temp.pop(int(args[1].content)-1)
+    a, b = executor.GlMemory.temp.pop(int(args[0].content)), executor.GlMemory.temp.pop(int(args[1].content) - 1)
     executor.GlMemory.temp.append(1 if a != b else 0)
     return index, 0
 
@@ -331,7 +432,7 @@ def l_noteq(index: int, args: list[Token]):
 def l_greater(index: int, args: list[Token]):
     expect(args[0], "Number", index)
     expect(args[1], "Number", index)
-    a, b = executor.GlMemory.temp.pop(int(args[0].content)), executor.GlMemory.temp.pop(int(args[1].content)-1)
+    a, b = executor.GlMemory.temp.pop(int(args[0].content)), executor.GlMemory.temp.pop(int(args[1].content) - 1)
     executor.GlMemory.temp.append(1 if a > b else 0)
     return index, 0
 
@@ -340,7 +441,7 @@ def l_greater(index: int, args: list[Token]):
 def l_lesser(index: int, args: list[Token]):
     expect(args[0], "Number", index)
     expect(args[1], "Number", index)
-    a, b = executor.GlMemory.temp.pop(int(args[0].content)), executor.GlMemory.temp.pop(int(args[1].content)-1)
+    a, b = executor.GlMemory.temp.pop(int(args[0].content)), executor.GlMemory.temp.pop(int(args[1].content) - 1)
     executor.GlMemory.temp.append(1 if a < b else 0)
     return index, 0
 
@@ -349,7 +450,7 @@ def l_lesser(index: int, args: list[Token]):
 def l_lesseq(index: int, args: list[Token]):
     expect(args[0], "Number", index)
     expect(args[1], "Number", index)
-    a, b = executor.GlMemory.temp.pop(int(args[0].content)), executor.GlMemory.temp.pop(int(args[1].content)-1)
+    a, b = executor.GlMemory.temp.pop(int(args[0].content)), executor.GlMemory.temp.pop(int(args[1].content) - 1)
     executor.GlMemory.temp.append(1 if a <= b else 0)
     return index, 0
 
@@ -358,16 +459,15 @@ def l_lesseq(index: int, args: list[Token]):
 def l_greatereq(index: int, args: list[Token]):
     expect(args[0], "Number", index)
     expect(args[1], "Number", index)
-    a, b = executor.GlMemory.temp.pop(int(args[0].content)), executor.GlMemory.temp.pop(int(args[1].content)-1)
+    a, b = executor.GlMemory.temp.pop(int(args[0].content)), executor.GlMemory.temp.pop(int(args[1].content) - 1)
     executor.GlMemory.temp.append(1 if a >= b else 0)
     return index, 0
-
 
 
 @operator
 def goto(index: int, args: list[Token]):
     expect(args[0], "Number", index)
-    return int(args[0].content), 0
+    return int(args[0].content)-1, 0
 
 
 @operator
