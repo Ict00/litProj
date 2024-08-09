@@ -164,7 +164,7 @@ def mforward(index: int, args: list[Token]):
                 i = args[b]
                 expect(i, "Number", index)
                 executor.GlMemory.mem[args[0].content].append(
-                    executor.GlMemory.mem[executor.CurrentMemory].pop(int(i.content)))
+                    executor.GlMemory.mem[executor.CurrentMemory][int(i.content)])
     else:
         expect(args[0], "Identifier", index)
         if mem_exist(args[0].content, index):
