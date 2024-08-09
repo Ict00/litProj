@@ -8,6 +8,9 @@ import executor
 
 @operator
 def declare(index: int, args: list[Token]):
+    if args.__len__() == 0:
+        out_error("Not enough arguments", index)
+        quit(1)
     if expect(args[0], "Identifier", index):
         if not executor.GlMemory.mem.__contains__(args[0].content):
             executor.GlMemory.mem[args[0].content] = []
@@ -19,6 +22,9 @@ def declare(index: int, args: list[Token]):
 
 @operator
 def sleep(index: int, args: list[Token]):
+    if args.__len__() == 0:
+        out_error("Not enough arguments", index)
+        quit(1)
     if expect(args[0], "Number", index):
         time.sleep(int(args[0].content))
     return index, 0
@@ -26,6 +32,9 @@ def sleep(index: int, args: list[Token]):
 
 @operator
 def tpop(index: int, args: list[Token]):
+    if args.__len__() == 0:
+        out_error("Not enough arguments", index)
+        quit(1)
     if args[0].content == "ALL":
         for i in executor.GlMemory.mem[executor.CurrentMemory].__len__():
             executor.GlMemory.temp.append(executor.GlMemory.mem[executor.CurrentMemory].pop(i))
@@ -38,18 +47,32 @@ def tpop(index: int, args: list[Token]):
 
 @operator
 def pull(index: int, args: list[Token]):
+    if args.__len__() == 0:
+        out_error("Not enough arguments", index)
+        quit(1)
     if args[0].content == "ALL":
         for i in executor.GlMemory.mem[executor.CurrentMemory]:
-            executor.GlMemory.temp.append(i)
+            try:
+                executor.GlMemory.temp.append(i)
+            except:
+                out_error("Out of range", index)
+                quit(1)
     else:
         for i in args:
             expect(i, "Number", index)
-            executor.GlMemory.temp.append(executor.GlMemory.mem[executor.CurrentMemory][int(i.content)])
+            try:
+                executor.GlMemory.temp.append(executor.GlMemory.mem[executor.CurrentMemory][int(i.content)])
+            except:
+                out_error("Out of range", index)
+                quit(1)
     return index, 0
 
 
 @operator
 def add(index: int, args: list[Token]):
+    if args.__len__() < 2:
+        out_error("Not enough arguments", index)
+        quit(1)
     expect(args[0], "Number", index)
     expect(args[1], "Number", index)
     val1 = executor.GlMemory.temp.pop(int(args[0].content))
@@ -61,6 +84,9 @@ def add(index: int, args: list[Token]):
 
 @operator
 def sub(index: int, args: list[Token]):
+    if args.__len__() < 2:
+        out_error("Not enough arguments", index)
+        quit(1)
     expect(args[0], "Number", index)
     expect(args[1], "Number", index)
     val1 = executor.GlMemory.temp.pop(int(args[0].content))
@@ -72,6 +98,9 @@ def sub(index: int, args: list[Token]):
 
 @operator
 def mul(index: int, args: list[Token]):
+    if args.__len__() < 2:
+        out_error("Not enough arguments", index)
+        quit(1)
     expect(args[0], "Number", index)
     expect(args[1], "Number", index)
     val1 = executor.GlMemory.temp.pop(int(args[0].content))
@@ -83,6 +112,9 @@ def mul(index: int, args: list[Token]):
 
 @operator
 def div(index: int, args: list[Token]):
+    if args.__len__() < 2:
+        out_error("Not enough arguments", index)
+        quit(1)
     expect(args[0], "Number", index)
     expect(args[1], "Number", index)
     val1 = executor.GlMemory.temp.pop(int(args[0].content))
@@ -97,6 +129,9 @@ def div(index: int, args: list[Token]):
 
 @operator
 def mod(index: int, args: list[Token]):
+    if args.__len__() < 2:
+        out_error("Not enough arguments", index)
+        quit(1)
     expect(args[0], "Number", index)
     expect(args[1], "Number", index)
     val1 = executor.GlMemory.temp.pop(int(args[0].content))
@@ -126,6 +161,9 @@ def inp(index: int, args: list[Token]):
 
 @operator
 def mergewith(index: int, args: list[Token]):
+    if args.__len__() < 2:
+        out_error("Not enough arguments", index)
+        quit(1)
     expect(args[0], "Identifier", index)
     expect(args[1], "Identifier", index)
     mem1 = args[0].content.replace("THIS", executor.CurrentMemory)
@@ -141,6 +179,9 @@ def mergewith(index: int, args: list[Token]):
 
 @operator
 def rawmergewith(index: int, args: list[Token]):
+    if args.__len__() < 2:
+        out_error("Not enough arguments", index)
+        quit(1)
     expect(args[0], "Identifier", index)
     expect(args[1], "Identifier", index)
     mem1 = args[0].content.replace("THIS", executor.CurrentMemory)
@@ -157,6 +198,9 @@ def rawmergewith(index: int, args: list[Token]):
 
 @operator
 def mforward(index: int, args: list[Token]):
+    if args.__len__() < 2:
+        out_error("Not enough arguments", index)
+        quit(1)
     if args[1].content != "ALL":
         expect(args[0], "Identifier", index)
         if mem_exist(args[0].content, index):
@@ -175,6 +219,9 @@ def mforward(index: int, args: list[Token]):
 
 @operator
 def forward(index: int, args: list[Token]):
+    if args.__len__() < 2:
+        out_error("Not enough arguments", index)
+        quit(1)
     if args[1].content != "ALL":
         expect(args[0], "Identifier", index)
         if mem_exist(args[0].content, index):
@@ -192,24 +239,42 @@ def forward(index: int, args: list[Token]):
 
 @operator
 def push(index: int, args: list[Token]):
+    if args.__len__() == 0:
+        out_error("Not enough arguments", index)
+        quit(1)
     if args[0].content == "SOFT":
         for b in range(1, args.__len__()):
             i = args[b]
             expect(i, "Number", index)
-            executor.GlMemory.mem[executor.CurrentMemory].append(executor.GlMemory.temp[int(i.content)])
+            try:
+                executor.GlMemory.mem[executor.CurrentMemory].append(executor.GlMemory.temp[int(i.content)])
+            except:
+                out_error("Out of range", index)
+                quit(1)
         pass
     elif args[0].content != "ALL":
         for i in args:
             expect(i, "Number", index)
-            executor.GlMemory.mem[executor.CurrentMemory].append(executor.GlMemory.temp.pop(int(i.content)))
+            try:
+                executor.GlMemory.mem[executor.CurrentMemory].append(executor.GlMemory.temp.pop(int(i.content)))
+            except:
+                out_error("Out of range", index)
+                quit(1)
     else:
         for i in executor.GlMemory.temp:
-            executor.GlMemory.mem[executor.CurrentMemory].append(i)
+            try:
+                executor.GlMemory.mem[executor.CurrentMemory].append(i)
+            except:
+                out_error("Out of range", index)
+                quit(1)
     return index, 0
 
 
 @operator
 def cloneto(index: int, args: list[Token]):
+    if args.__len__() < 2:
+        out_error("Not enough arguments", index)
+        quit(1)
     expect(args[0], "Identifier", index)
     expect(args[1], "Identifier", index)
     mem1 = args[0].content.replace("THIS", executor.CurrentMemory)
@@ -221,6 +286,9 @@ def cloneto(index: int, args: list[Token]):
 
 @operator
 def tdel(index: int, args: list[Token]):
+    if args.__len__() == 0:
+        out_error("Not enough arguments", index)
+        quit(1)
     if args[0].content != "ALL":
         for i in args:
             expect(i, "Number", index)
@@ -236,6 +304,9 @@ def tdel(index: int, args: list[Token]):
 
 @operator
 def mdel(index: int, args: list[Token]):
+    if args.__len__() == 0:
+        out_error("Not enough arguments", index)
+        quit(1)
     if args[0].content != "ALL":
         for i in args:
             expect(i, "Number", index)
@@ -251,6 +322,9 @@ def mdel(index: int, args: list[Token]):
 
 @operator
 def ddel(index: int, args: list[Token]):
+    if args.__len__() == 0:
+        out_error("Not enough arguments", index)
+        quit(1)
     expect(args[0], "Identifier", index)
     mem = args[0].content.replace("THIS", executor.CurrentMemory)
     if mem_exist(mem, index) and mem != executor.CurrentMemory:
@@ -263,6 +337,9 @@ def ddel(index: int, args: list[Token]):
 
 @operator
 def writestr(index: int, args: list[Token]):
+    if args.__len__() == 0:
+        out_error("Not enough arguments", index)
+        quit(1)
     if expect(args[0], "String", index):
         for character in args[0].content:
             executor.GlMemory.temp.append(int(character.encode()[0]))
@@ -298,6 +375,9 @@ def writenum(index: int, args: list[Token]):
 
 @operator
 def run(index: int, args: list[Token]):
+    if args.__len__() == 2:
+        out_error("Not enough arguments", index)
+        quit(1)
     expect(args[0], "Identifier", index)
     try:
         executor.execute(executor.Executing, args[0].content)
@@ -309,6 +389,9 @@ def run(index: int, args: list[Token]):
 
 @operator
 def pycall(index: int, args: list[Token]):
+    if args.__len__() == 0:
+        out_error("Not enough arguments", index)
+        quit(1)
     expect(args[0], "String", index)
     cmd = args[0].content
     try:
@@ -368,6 +451,9 @@ def equit(index: int, args: list[Token]):
 
 @operator
 def lif(index: int, args: list[Token]):
+    if args.__len__() == 0:
+        out_error("Not enough arguments", index)
+        quit(1)
     expect(args[0], "Number", index)
     val = executor.GlMemory.temp.pop(int(args[0].content))
     if val == 0:
@@ -377,6 +463,9 @@ def lif(index: int, args: list[Token]):
 
 @operator
 def l_not(index: int, args: list[Token]):
+    if args.__len__() == 0:
+        out_error("Not enough arguments", index)
+        quit(1)
     expect(args[0], "Number", index)
     a = executor.GlMemory.temp.pop(int(args[0].content))
     executor.GlMemory.temp.append(0 if a == 1 else 1)
@@ -385,6 +474,9 @@ def l_not(index: int, args: list[Token]):
 
 @operator
 def str_eq(index: int, args: list[Token]):
+    if args.__len__() < 2:
+        out_error("Not enough arguments", index)
+        quit(1)
     expect(args[0], "Number", index)
     expect(args[1], "String", index)
     a, b = int(args[0].content), args[1].content
@@ -404,6 +496,9 @@ def str_eq(index: int, args: list[Token]):
 
 @operator
 def str_noteq(index: int, args: list[Token]):
+    if args.__len__() < 2:
+        out_error("Not enough arguments", index)
+        quit(1)
     expect(args[0], "Number", index)
     expect(args[1], "String", index)
     a, b = int(args[0].content), args[1].content
@@ -423,6 +518,9 @@ def str_noteq(index: int, args: list[Token]):
 
 @operator
 def l_eq(index: int, args: list[Token]):
+    if args.__len__() < 2:
+        out_error("Not enough arguments", index)
+        quit(1)
     expect(args[0], "Number", index)
     expect(args[1], "Number", index)
     a, b = executor.GlMemory.temp.pop(int(args[0].content)), executor.GlMemory.temp.pop(int(args[1].content) - 1)
@@ -432,6 +530,9 @@ def l_eq(index: int, args: list[Token]):
 
 @operator
 def l_noteq(index: int, args: list[Token]):
+    if args.__len__() < 2:
+        out_error("Not enough arguments", index)
+        quit(1)
     expect(args[0], "Number", index)
     expect(args[1], "Number", index)
     a, b = executor.GlMemory.temp.pop(int(args[0].content)), executor.GlMemory.temp.pop(int(args[1].content) - 1)
@@ -441,6 +542,9 @@ def l_noteq(index: int, args: list[Token]):
 
 @operator
 def l_greater(index: int, args: list[Token]):
+    if args.__len__() < 2:
+        out_error("Not enough arguments", index)
+        quit(1)
     expect(args[0], "Number", index)
     expect(args[1], "Number", index)
     a, b = executor.GlMemory.temp.pop(int(args[0].content)), executor.GlMemory.temp.pop(int(args[1].content) - 1)
@@ -450,6 +554,9 @@ def l_greater(index: int, args: list[Token]):
 
 @operator
 def l_lesser(index: int, args: list[Token]):
+    if args.__len__() < 2:
+        out_error("Not enough arguments", index)
+        quit(1)
     expect(args[0], "Number", index)
     expect(args[1], "Number", index)
     a, b = executor.GlMemory.temp.pop(int(args[0].content)), executor.GlMemory.temp.pop(int(args[1].content) - 1)
@@ -459,6 +566,9 @@ def l_lesser(index: int, args: list[Token]):
 
 @operator
 def l_lesseq(index: int, args: list[Token]):
+    if args.__len__() < 2:
+        out_error("Not enough arguments", index)
+        quit(1)
     expect(args[0], "Number", index)
     expect(args[1], "Number", index)
     a, b = executor.GlMemory.temp.pop(int(args[0].content)), executor.GlMemory.temp.pop(int(args[1].content) - 1)
@@ -468,6 +578,9 @@ def l_lesseq(index: int, args: list[Token]):
 
 @operator
 def l_greatereq(index: int, args: list[Token]):
+    if args.__len__() < 2:
+        out_error("Not enough arguments", index)
+        quit(1)
     expect(args[0], "Number", index)
     expect(args[1], "Number", index)
     a, b = executor.GlMemory.temp.pop(int(args[0].content)), executor.GlMemory.temp.pop(int(args[1].content) - 1)
@@ -477,12 +590,18 @@ def l_greatereq(index: int, args: list[Token]):
 
 @operator
 def goto(index: int, args: list[Token]):
+    if args.__len__() == 0:
+        out_error("Not enough arguments", index)
+        quit(1)
     expect(args[0], "Number", index)
     return int(args[0].content)-1, 0
 
 
 @operator
 def use(index: int, args: list[Token]):
+    if args.__len__() == 0:
+        out_error("Not enough arguments", index)
+        quit(1)
     if expect(args[0], "Identifier", index):
         if executor.GlMemory.mem.__contains__(args[0].content):
             executor.CurrentMemory = args[0].content

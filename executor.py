@@ -38,11 +38,7 @@ def execute(to_execute: str, root: str) -> int:
     i = 0
     while i < to_execute.keys().__len__():
         key = list(to_execute.keys())[i]
-        try:
-            result = Operators[key.split(" ")[1]](i, to_execute[key])
-        except:
-            out_error("Unknown error; messed up with memory?", i)
-            quit(1)
+        result = Operators[key.split(" ")[1]](i, to_execute[key])
         try:
             i = result[0]
         except:
