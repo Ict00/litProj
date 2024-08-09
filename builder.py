@@ -7,8 +7,7 @@ from utils import Token, BuilderVersion, PartialOperators, token_to_str, Operato
 def simple_build(tokens: list[Token]) -> str:
     result = \
         {
-            "built_with": BuilderVersion,
-            "build_type": "SIMPLE"
+            "built_with": BuilderVersion
         }
     app = {}
     # Temporary

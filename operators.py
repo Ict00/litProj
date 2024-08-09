@@ -1,7 +1,7 @@
 import builtins
 import time
 
-from utils import out_error, operator, Token
+from utils import out_error, operator, Token, expect
 from executor import *
 import executor
 
@@ -293,6 +293,17 @@ def writenum(index: int, args: list[Token]):
     for i in args:
         expect(i, "Number", index)
         executor.GlMemory.temp.append(int(i.content))
+    return index, 0
+
+
+@operator
+def run(index: int, args: list[Token]):
+    expect(args[0], "Identifier", index)
+    try:
+        executor.execute(executor.Executing, args[0].content)
+    except:
+        out_error("run: something went wrong", index)
+        quit(1)
     return index, 0
 
 
