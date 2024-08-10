@@ -3,7 +3,7 @@
 </p>
 
 ------------------------
-## The Lit 'Degradation' language
+## The Lit 'Degradation' Language
 Lit (Лит) - Это язык программирования, компилируемый в JSON.
 
 ### Правила операторов
