@@ -50,7 +50,8 @@ def lex1(lines: list[str]) -> list[Token]:
                 result.append(Token("String", next_token))
             else:
                 result.append(Token("Identifier", next_token))
-        result.append(Token("Semicolon", ";"))
+        if result[result.__len__()-1].type != "Semicolon":
+            result.append(Token("Semicolon", ";"))
     return result
 
 
