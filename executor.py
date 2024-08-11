@@ -51,9 +51,9 @@ def execute(to_execute: str, root: str) -> int:
             out_error(f"Tried to goto out of Execution List: {result[0]}", i)
             quit(1)
         for b in GlMemory.mem["outstr"]:
-            print(b.to_bytes().decode(), end='')
+            print(b.to_bytes().decode(), end='', flush=True)
         for b in GlMemory.mem["outnum"]:
-            print(b, end='')
+            print(b, end='', flush=True)
         GlMemory.mem["outnum"] = []
         GlMemory.mem["outstr"] = []
         i += 1
