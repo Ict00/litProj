@@ -6,6 +6,7 @@ from operators import *
 GlMemory = Memory()
 CurrentMemory = "main"
 Executing = ""
+GotoLim = -1
 
 
 def pre_execute(to_execute: str, root: str) -> dict:
@@ -32,6 +33,7 @@ def pre_execute(to_execute: str, root: str) -> dict:
 
 
 def execute(to_execute: str, root: str) -> int:
+    global GotoLim
     global Executing
     Executing = to_execute
     to_execute = pre_execute(Executing, root)
@@ -40,7 +42,11 @@ def execute(to_execute: str, root: str) -> int:
         key = list(to_execute.keys())[i]
         result = Operators[key.split(" ")[1]](i, to_execute[key])
         try:
-            i = result[0]
+            if result[0] != i:
+                if GotoLim > 0:
+                    i = result[0]
+                    if GotoLim != -1:
+                        GotoLim -= 1
         except:
             out_error(f"Tried to goto out of Execution List: {result[0]}", i)
             quit(1)

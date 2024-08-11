@@ -598,6 +598,16 @@ def goto(index: int, args: list[Token]):
 
 
 @operator
+def gotolim(index: int, args: list[Token]):
+    if args.__len__() == 0:
+        out_error("Not enough arguments", index)
+        quit(1)
+    expect(args[0], "Number", index)
+    executor.GotoLim = int(args[0].content)
+    return index, 0
+
+
+@operator
 def use(index: int, args: list[Token]):
     if args.__len__() == 0:
         out_error("Not enough arguments", index)
