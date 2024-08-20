@@ -1,5 +1,5 @@
 <p align="center">
-<img src="https://cdn.discordapp.com/attachments/660154366820483072/1271465801425358868/lit.svg?ex=66b7704d&is=66b61ecd&hm=91b1c8b427d33a05806c3de0ea999c13eb5c997cb69a0fab0732acfe4c720dd2&"  alt="TG-Logo" border="0" width=300 height=300>
+<img src="..." alt="LitICON" order="0" width=300 height=300>
 </p>
 
 ------------------------
